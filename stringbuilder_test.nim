@@ -30,6 +30,21 @@ suite "stringbuilder":
     check($sb == "it's over ")
     check(sb.len == 10)
 
+  test "linear capacity":
+    var sb = newStringBuilder(2, linear(3))
+    sb &= "123"
+    check(sb.capacity == 6)
+    check($sb == "123")
+
+    sb &= "456"
+    check(sb.capacity == 6)
+    check($sb == "123456")
+
+    sb &= "7"
+    check(sb.capacity == 10)
+    check($sb == "1234567")
+
+
   test "truncates":
     var sb = newStringBuilder("0123456789")
     sb.truncate(2)

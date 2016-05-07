@@ -5,6 +5,19 @@ type
     len: int
     cap: int
     string: string
+    grow: Grow
+
+  Grow* = proc(sb: StringBuilder, needed: int): int
+
+# doubles capacity generator, this is the default strategy
+proc doubling*(sb: StringBuilder, needed: int): int {.procvar.} =
+  let newCapacity = sb.cap * 2
+  if newCapacity < needed: needed + defaultCapacity else: newCapacity
+
+# creates a linear growth strategy, which will cause the stringbuilder to
+# grow to the desired amount + the specified amount
+proc linear*(amount: int): Grow =
+  return proc(sb: StringBuilder, needed: int): int = needed + amount
 
 # gets the capacity (this is the length + extra space for future growth)
 proc capacity*(sb: StringBuilder): int {.inline.} =
@@ -27,15 +40,16 @@ proc destroy*(sb: StringBuilder): string =
   result.setLen(sb.len)
 
 proc ensureCapacity(sb: StringBuilder, n: int) =
-  if sb.cap > n: return
-  var newCapcity = sb.cap * 2
-  if newCapcity < n: newCapcity = n
-  sb.cap = newCapcity
+  if sb.cap >= n: return
 
   var tmp: string
   shallowCopy tmp, sb.string
-  sb.string = newStringOfCap(newCapcity)
-  sb.string.setLen(newCapcity)
+
+  let newCapacity = sb.grow(sb, n)
+  sb.cap = newCapacity
+
+  sb.string = newStringOfCap(newCapacity)
+  sb.string.setLen(newCapacity)
   copyMem(addr sb.string[0] , addr tmp[0] , sb.len)
 
 # appends the string
@@ -58,13 +72,14 @@ proc setLen*(sb: StringBuilder, n: int) =
   if n < sb.len: sb.len = n
 
 # create a new stringbuilder with the specified, or default, capacity
-proc newStringBuilder*(cap: int = defaultCapacity): StringBuilder =
+proc newStringBuilder*(cap: int = defaultCapacity, grow: Grow = doubling): StringBuilder =
   new(result)
+  result.grow = grow
   result.cap = if cap < 1: defaultCapacity else: cap
   result.string = newStringOfCap(result.cap)
   result.string.setLen(result.cap)
 
 # create a new stringbuilder with an initial string
-proc newStringBuilder*(init: string): StringBuilder =
-  result = newStringBuilder(init.len + defaultCapacity)
+proc newStringBuilder*(init: string, grow: Grow = doubling): StringBuilder =
+  result = newStringBuilder(init.len + defaultCapacity, grow)
   result.append(init)
