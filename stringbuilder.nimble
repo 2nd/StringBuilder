@@ -1,9 +1,10 @@
-[Package]
-name          = "StringBuilder"
+# Package
+
 version       = "0.0.1"
 author        = "Karl Seguin"
-description   = "More efficient string concatenation"
+description   = "Writes JSON"
 license       = "MIT"
 
-[Deps]
-Requires: "nim >= 0.13.0"
+# Dependencies
+
+requires "nim >= 0.13.0"
