@@ -1,7 +1,7 @@
 const defaultCapacity = 256
 
 type
-  StringBuilder = ref object
+  StringBuilder* = ref object
     len: int
     cap: int
     string: string
