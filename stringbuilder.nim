@@ -63,6 +63,17 @@ proc append*(sb: StringBuilder, value: string) =
 proc `&=`*(sb: StringBuilder, value: string) {.inline.} =
   append(sb, value)
 
+# appends the char
+proc append*(sb: StringBuilder, value: char) =
+  let newLength = 1 + sb.len
+  sb.ensureCapacity(newLength)
+  sb.string[sb.len] = value
+  sb.len = newLength
+
+# appends the char
+proc `&=`*(sb: StringBuilder, value: char) {.inline.} =
+  append(sb, value)
+
 # truncates the string without changing the total capacity
 proc truncate*(sb: StringBuilder, n: int) =
   sb.len = if n > sb.len: 0 else: sb.len - n

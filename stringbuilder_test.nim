@@ -65,3 +65,10 @@ suite "stringbuilder":
     var sb = newStringBuilder("it's over 9000!")
     sb &= "!!"
     check(sb.destroy == "it's over 9000!!!")
+
+  test "appends a char":
+    var sb = newStringBuilder(1)
+    sb.append('a')
+    sb &= 'b'
+    sb.append('c')
+    check(sb.destroy == "abc")
