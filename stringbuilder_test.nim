@@ -66,9 +66,11 @@ suite "stringbuilder":
     sb &= "!!"
     check(sb.destroy == "it's over 9000!!!")
 
-  test "appends a char":
+  test "appends chars":
     var sb = newStringBuilder(1)
     sb.append('a')
+    check($sb == "a")
     sb &= 'b'
+    check($sb == "ab")
     sb.append('c')
-    check(sb.destroy == "abc")
+    check($sb == "abc")

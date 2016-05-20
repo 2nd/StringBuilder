@@ -20,14 +20,14 @@ proc linear*(amount: int): Grow =
   return proc(sb: StringBuilder, needed: int): int = needed + amount
 
 # gets the capacity (this is the length + extra space for future growth)
-proc capacity*(sb: StringBuilder): int {.inline.} =
+proc capacity*(sb: StringBuilder): int {.inline, noSideEffect.} =
   sb.cap
 
 # gets the length of the string
-proc len*(sb: StringBuilder): int {.inline.} =
+proc len*(sb: StringBuilder): int {.inline, noSideEffect.} =
   sb.len
 
-# creates a new string from the stringbuilder, see seal for an efficient alternative
+# creates a new string from the stringbuilder, see destroy for an efficient alternative
 proc `$`*(sb: StringBuilder): string {.inline.} =
   substr(sb.string, 0, <sb.len)
 
@@ -39,9 +39,7 @@ proc destroy*(sb: StringBuilder): string =
   shallowCopy result, sb.string
   result.setLen(sb.len)
 
-proc ensureCapacity(sb: StringBuilder, n: int) =
-  if sb.cap >= n: return
-
+proc expand(sb: StringBuilder, n: int) =
   var tmp: string
   shallowCopy tmp, sb.string
 
@@ -55,7 +53,7 @@ proc ensureCapacity(sb: StringBuilder, n: int) =
 # appends the string
 proc append*(sb: StringBuilder, value: string) =
   let newLength = value.len + sb.len
-  sb.ensureCapacity(newLength)
+  if sb.cap < newLength: sb.expand(newLength)
   copyMem(addr sb.string[sb.len] , unsafeAddr value[0] , value.len)
   sb.len = newLength
 
@@ -65,8 +63,8 @@ proc `&=`*(sb: StringBuilder, value: string) {.inline.} =
 
 # appends the char
 proc append*(sb: StringBuilder, value: char) =
-  let newLength = 1 + sb.len
-  sb.ensureCapacity(newLength)
+  let newLength = sb.len + 1
+  if sb.cap < newLength: sb.expand(newLength)
   sb.string[sb.len] = value
   sb.len = newLength
 
@@ -75,11 +73,11 @@ proc `&=`*(sb: StringBuilder, value: char) {.inline.} =
   append(sb, value)
 
 # truncates the string without changing the total capacity
-proc truncate*(sb: StringBuilder, n: int) =
+proc truncate*(sb: StringBuilder, n: int) {.inline.} =
   sb.len = if n > sb.len: 0 else: sb.len - n
 
 # sets the length of the string, cannot be greater than the current length
-proc setLen*(sb: StringBuilder, n: int) =
+proc setLen*(sb: StringBuilder, n: int) {.inline.} =
   if n < sb.len: sb.len = n
 
 # create a new stringbuilder with the specified, or default, capacity
